@@ -4,11 +4,11 @@
 	<name>indicate-task</name>
 	<summary>show and control a running task with an indicator-applet</summary>
 	<description>
-indicator_menu
-==============
+indicate-task
+=============
 
-Displays an indicator-applet menu from a shell script,
-for the duration of a process.
+A command line tool that displays an indicator-applet
+menu for the duration of a long-running process (&quot;task&quot;).
 
 The indicator can contain:
  - an icon
@@ -50,8 +50,8 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.tgz" size="2312"/>
 		</implementation>
 		<implementation id="sha1new=f892a7c9a4a9d8e8a1e7f91e04fcf2b9f5d4dd6e" released="2011-01-16" version="0.1.1">
-    <manifest-digest sha256="5df47dd6ddc0d972d215ae9ef2c8f4d286422b12e0f271422cccfaf1794e1f53"/>
-    <archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.1.tgz" size="2318"/>
-  </implementation>
+			<manifest-digest sha256="5df47dd6ddc0d972d215ae9ef2c8f4d286422b12e0f271422cccfaf1794e1f53"/>
+			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.1.tgz" size="2318"/>
+		</implementation>
 	</group>
 </interface>

@@ -1,8 +1,8 @@
-indicator_menu
-==============
+indicate-task
+=============
 
-Displays an indicator-applet menu from a shell script,
-for the duration of a process.
+A command line tool that displays an indicator-applet
+menu for the duration of a long-running process ("task").
 
 The indicator can contain:
  - an icon
