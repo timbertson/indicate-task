@@ -1,0 +1,2 @@
+capture & display stderr
+keep updating zenity box when more output arrives
