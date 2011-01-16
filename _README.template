@@ -1,0 +1,21 @@
+indicator_menu
+==============
+
+Displays an indicator-applet menu from a shell script,
+for the duration of a process.
+
+The indicator can contain:
+ - an icon
+ - a label
+
+When clicked, the menu contains:
+ - descriptive text
+ - "show output" button (which shows the currently
+   captured STDOUT of the launched program)
+ - cancel (sends SIGINT to program)
+
+indicate-task echoes stdin to stdout as well as capturing it,
+so you can pipe that somewhere if you need to use the output
+of the task.
+
+------------------------------

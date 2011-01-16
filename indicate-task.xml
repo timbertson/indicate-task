@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type='text/xsl' href='interface.xsl'?>
+<interface uri="http://gfxmonk.net/dist/0install/indicate-task.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+	<name>indicate-task</name>
+	<summary>show and control a running task with an indicator-applet</summary>
+	<description>
+indicator_menu
+==============
+
+Displays an indicator-applet menu from a shell script,
+for the duration of a process.
+
+The indicator can contain:
+ - an icon
+ - a label
+
+When clicked, the menu contains:
+ - descriptive text
+ - &quot;show output&quot; button (which shows the currently
+   captured STDOUT of the launched program)
+ - cancel (sends SIGINT to program)
+
+indicate-task echoes stdin to stdout as well as capturing it,
+so you can pipe that somewhere if you need to use the output
+of the task.
+
+------------------------------
+Usage: indicate-task [options] -- command-and-arguments
+
+Options:
+  -h, --help            show this help message and exit
+  --style=STYLE         
+  --long-description=LONG_DESCRIPTION
+                        set long description (visible in popup menu)
+  -d DESCRIPTION, --description=DESCRIPTION
+                        set description (visible in tray)
+  --id=ID               set application ID (defaults to description or a
+                        random string if no description given)
+  --no-icon             don't use an icon
+  --no-notify           suppress completion notification
+  --ignore-errors       Suppress automatic output display when process returns
+                        nonzero error code
+
+eg: indicate-task -d download -- curl 'http://example.com/bigfile'
+	</description>
+	<group main="indicate_task.py">
+		<environment insert="" mode="prepend" name="PATH"/>
+		<implementation id="sha1new=c3fa36b89f7c8e59fbcdeb9446ff118af126cdbd" released="2011-01-16" version="0.1">
+			<manifest-digest sha256="bfe07f348243f7902527cb2987c22b1f4f0a321ab8fa973e707c72fa3bc74ae5"/>
+			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.tgz" size="2312"/>
+		</implementation>
+		<implementation id="sha1new=f892a7c9a4a9d8e8a1e7f91e04fcf2b9f5d4dd6e" released="2011-01-16" version="0.1.1">
+    <manifest-digest sha256="5df47dd6ddc0d972d215ae9ef2c8f4d286422b12e0f271422cccfaf1794e1f53"/>
+    <archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.1.tgz" size="2318"/>
+  </implementation>
+	</group>
+</interface>

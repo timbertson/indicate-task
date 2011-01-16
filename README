@@ -1,0 +1,38 @@
+indicator_menu
+==============
+
+Displays an indicator-applet menu from a shell script,
+for the duration of a process.
+
+The indicator can contain:
+ - an icon
+ - a label
+
+When clicked, the menu contains:
+ - descriptive text
+ - "show output" button (which shows the currently
+   captured STDOUT of the launched program)
+ - cancel (sends SIGINT to program)
+
+indicate-task echoes stdin to stdout as well as capturing it,
+so you can pipe that somewhere if you need to use the output
+of the task.
+
+------------------------------
+Usage: indicate-task [options] -- command-and-arguments
+
+Options:
+  -h, --help            show this help message and exit
+  --style=STYLE         
+  --long-description=LONG_DESCRIPTION
+                        set long description (visible in popup menu)
+  -d DESCRIPTION, --description=DESCRIPTION
+                        set description (visible in tray)
+  --id=ID               set application ID (defaults to description or a
+                        random string if no description given)
+  --no-icon             don't use an icon
+  --no-notify           suppress completion notification
+  --ignore-errors       Suppress automatic output display when process returns
+                        nonzero error code
+
+eg: indicate-task -d download -- curl 'http://example.com/bigfile'
