@@ -33,115 +33,158 @@ import gtk
 import appindicator
 import optparse
 import threading
-import StringIO
+from StringIO import StringIO
 import sys
+import os
 import subprocess
 
-lock = threading.RLock()
-output = StringIO.StringIO()
-quit = threading.Event()
-already_quitting = threading.Event()
-child = None
-cmd = None
-opts = None
+OUTPUT = None
+QUIT = threading.Event()
+ALREADY_QUITTING = threading.Event()
+CANCELLED = threading.Event()
+CHILD = None
+CMD = None
+OPTS = None
 
 def cancel(*a):
-	print >> sys.stderr, "killing: %s" % (child.pid,)
-	child.kill()
+	print >> sys.stderr, "killing: %s" % (CHILD.pid,)
+	CANCELLED.set()
+	CHILD.kill()
 
-def show_log(*a, **kw):
-	with lock:
-		s = output.getvalue()
-	s = "Output from %s (%s)\n____\n%s" % (opts.description or 'command', ' '.join(map(repr, cmd)),s)
-	display = subprocess.Popen(['zenity', '--text-info', '--width=600', '--height=400'], stdin=subprocess.PIPE)
-	display.stdin.write(s)
-	display.stdin.close()
+def display_text(s):
+	p = subprocess.Popen(['zenity', '--text-info', '--width=600', '--height=400'], stdin=subprocess.PIPE)
+	p.stdin.write(s)
+	return p
+
+class Output(object):
+	def __init__(self, child):
+		self.combined = StringIO()
+		self.lock = threading.RLock()
+		self.display = None
+
+		StreamReader(child.stdout, sys.stdout, self).start()
+		StreamReader(child.stderr, sys.stderr, self).start()
+	
+	def add(self, line):
+		with self.lock:
+			self.combined.write(line)
+			if self.display_running:
+				self.display.stdin.write(line)
+	
+	@property
+	def display_running(self):
+		with self.lock:
+			if self.display:
+				self.display.poll()
+				return self.display.returncode is None
+			return False
+
+	def show(self, *a):
+		with self.lock:
+			s = self.combined.getvalue()
+			s = "Output from %s (%s)\n____\n%s" % (OPTS.description or 'command', ' '.join(map(repr, CMD)),s)
+			self.display = display_text(s)
+
+class Cancel(RuntimeError): pass
 
 def launch(args):
-	global child
-	child = subprocess.Popen(args, stdout=subprocess.PIPE)
-	StdinReader(child.stdout).start()
+	global CHILD, OUTPUT
+	try:
+		CHILD = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	except OSError, e:
+		display_text("Couldn't launch task: %s\ndoes %r exist?\n  -- %s" % (" ".join(map(repr, args)), args[0], e))
+		raise Cancel
+	if OPTS.capture_output:
+		OUTPUT = Output(CHILD)
 
-class StdinReader(threading.Thread):
+class StreamReader(threading.Thread):
 	daemon = True
-	def __init__(self, file, *a, **kw):
-		self.file = file
-		super(StdinReader, self).__init__(*a, **kw)
+	def __init__(self, instream, outstream, output, *a, **kw):
+		self.instream = instream
+		self.outstream = outstream
+		self.output = output
+		super(StreamReader, self).__init__(*a, **kw)
 
 	def run(self):
 		try:
 			while True:
-				line = self.file.readline()
+				line = self.instream.readline()
 				if line == '':
 					raise EOFError()
-				print line,
-				with lock:
-					output.write(line)
+				print >> self.outstream, line,
+				self.output.add(line)
 		except EOFError:
-			quit.set()
+			QUIT.set()
 
 class WaitForQuit(threading.Thread):
 	daemon = True
 	def run(*a):
-		quit.wait()
+		QUIT.wait()
 		def _quit(*a):
-			if already_quitting.is_set():
+			if ALREADY_QUITTING.is_set():
 				return
-			already_quitting.set()
+			ALREADY_QUITTING.set()
 			gtk.main_quit()
 		gobject.idle_add(_quit)
 
 def notify(opts):
-	if child.returncode != 0:
-		show_log()
-	if not opts.notify:
+	if CANCELLED.is_set:
+		return
+	if CHILD.returncode != 0:
+		OUTPUT.show()
+	if not OPTS.notify:
 		return
 	subprocess.Popen([
 		'notify-send',
-		opts.long_description or opts.description or 'task',
-		"Finished %s" % ('successfully' if child.returncode == 0 else ('with error code %s' % (child.returncode,))),
+		OPTS.long_description or OPTS.description or 'task',
+		"Finished %s" % ('successfully' if CHILD.returncode == 0 else ('with error code %s' % (CHILD.returncode,))),
 	])
 
 def main():
-	global cmd, opts
+	global CMD, OPTS
 	p = optparse.OptionParser(
 		"usage: indicate-task [options] -- command-and-arguments",
 		epilog="eg: indicate-task -d download -- curl 'http://example.com/bigfile'")
 	p.add_option('--style', default='network-transmit-receive')
 	p.add_option('--long-description', default=None, help='set long description (visible in popup menu)')
-	p.add_option('-d', '--description', default=None, help='set description (visible in tray)')
-	p.add_option('--id', default=None, help='set application ID (defaults to description or a random string if no description given)')
+	p.add_option('-d', '--description', default=None, help='set description (visible in tray, defaults to command executable)')
+	p.add_option('--id', default=None, help='set application ID (defaults to description)')
 	p.add_option('--no-icon', dest='style', action='store_const', const='', help="don't use an icon")
 	p.add_option('--no-notify', dest='notify', action='store_false', default=True, help="suppress completion notification")
+	p.add_option('--no-capture', dest='capture_output', action='store_false', default=True, help="suppress output capture")
 	p.add_option('--ignore-errors', action='store_false', dest='show_errors', default=True, help="Suppress automatic output display when process returns nonzero error code")
-	opts, cmd = p.parse_args()
+	OPTS, CMD = p.parse_args()
 
-	assert len(cmd) > 0
-	if not opts.id:
-		if opts.description:
-			opts.id = opts.description
-		else:
-			# assign a random ID
-			import random
-			random.seed()
-			opts.id = "indicate-task__%s" % (random.randrange(10,99),)
+	assert len(CMD) > 0
 
-	if not opts.long_description and opts.description:
-		opts.long_description = opts.description + ": running..."
+	if OPTS.description is None:
+		OPTS.description = os.path.basename(CMD[0])
 
-	ind = appindicator.Indicator(opts.id,
-		opts.style,
+	if not OPTS.id:
+		OPTS.id = str(OPTS.description)
+
+	if not OPTS.long_description and OPTS.description:
+		OPTS.long_description = OPTS.description + ": running..."
+
+	ind = appindicator.Indicator(OPTS.id,
+		OPTS.style,
 		appindicator.CATEGORY_APPLICATION_STATUS)
 
 	ind.set_status(appindicator.STATUS_ACTIVE)
-	if opts.description:
-		ind.set_label(opts.description)
+	if OPTS.description:
+		try:
+			ind.set_label(OPTS.description)
+		except RuntimeError:
+			print >> sys.stderr, "Unable to set label - your libindicator version may be too old. use -d'' to disable this message"
+
+	launch(CMD)
 
 	items = []
-	show_log_menu = gtk.MenuItem("Show output...")
-	show_log_menu.connect("activate", show_log, None)
-	items.append(show_log_menu)
-	items.append(gtk.MenuItem())
+	if OPTS.capture_output:
+		show_log_menu = gtk.MenuItem("Show output...")
+		show_log_menu.connect("activate", OUTPUT.show, None)
+		items.append(show_log_menu)
+		items.append(gtk.MenuItem())
 
 	cancel_menu = gtk.MenuItem("Cancel")
 	cancel_menu.connect("activate", cancel, None)
@@ -150,8 +193,8 @@ def main():
 	# show all items
 	menu = gtk.Menu()
 
-	if opts.long_description:
-		label = gtk.MenuItem(opts.long_description)
+	if OPTS.long_description:
+		label = gtk.MenuItem(OPTS.long_description)
 		label.set_sensitive(False)
 		items.insert(0, label)
 
@@ -160,7 +203,6 @@ def main():
 		item.show()
 	ind.set_menu(menu)
 
-	launch(cmd)
 	WaitForQuit().start()
 	try:
 		gtk.main()
@@ -168,13 +210,20 @@ def main():
 		print >> sys.stderr, "ending..."
 		cancel()
 	except Exception:
-		quit.set()
-		if opts.verbose:
+		QUIT.set()
+		if OPTS.verbose:
 			raise
 
-	child.wait()
-	notify(opts)
-	return child.returncode
+	CHILD.wait()
+	notify(OPTS)
+	return CHILD.returncode
 
 if __name__ == "__main__":
-	sys.exit(main())
+	try:
+		sys.exit(main())
+	except (KeyboardInterrupt, EOFError, Cancel), e:
+		sys.exit(1)
+	except Exception, e:
+		import traceback
+		trace = traceback.format_exc()
+		display_text(trace)

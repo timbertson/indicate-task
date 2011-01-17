@@ -1,2 +1,1 @@
-capture & display stderr
-keep updating zenity box when more output arrives
+add dependency on python-indicate system package

@@ -27,11 +27,12 @@ Options:
   --long-description=LONG_DESCRIPTION
                         set long description (visible in popup menu)
   -d DESCRIPTION, --description=DESCRIPTION
-                        set description (visible in tray)
-  --id=ID               set application ID (defaults to description or a
-                        random string if no description given)
+                        set description (visible in tray, defaults to command
+                        executable)
+  --id=ID               set application ID (defaults to description)
   --no-icon             don't use an icon
   --no-notify           suppress completion notification
+  --no-capture          suppress output capture
   --ignore-errors       Suppress automatic output display when process returns
                         nonzero error code
 

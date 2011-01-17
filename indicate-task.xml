@@ -33,11 +33,12 @@ Options:
   --long-description=LONG_DESCRIPTION
                         set long description (visible in popup menu)
   -d DESCRIPTION, --description=DESCRIPTION
-                        set description (visible in tray)
-  --id=ID               set application ID (defaults to description or a
-                        random string if no description given)
+                        set description (visible in tray, defaults to command
+                        executable)
+  --id=ID               set application ID (defaults to description)
   --no-icon             don't use an icon
   --no-notify           suppress completion notification
+  --no-capture          suppress output capture
   --ignore-errors       Suppress automatic output display when process returns
                         nonzero error code
 
@@ -53,5 +54,9 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 			<manifest-digest sha256="5df47dd6ddc0d972d215ae9ef2c8f4d286422b12e0f271422cccfaf1794e1f53"/>
 			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.1.tgz" size="2318"/>
 		</implementation>
+		<implementation id="sha1new=1d4c68f562332be53cdf46c3a83497553341768c" released="2011-01-17" version="0.1.2">
+    <manifest-digest sha256="de18266650256a82ad0be41e47f291c80482a123b36cdeba0119a5db74abd6d2"/>
+    <archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.2.tgz" size="2745"/>
+  </implementation>
 	</group>
 </interface>
