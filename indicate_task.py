@@ -2,9 +2,9 @@
 #
 # Copyright 2009 Canonical Ltd.
 #
-# Authors: Neil Jagdish Patel <neil.patel@canonical.com>
+# Authors: Tim Cuthbertson <tim@gfxmonk.net>
+#          Neil Jagdish Patel <neil.patel@canonical.com>
 #          Jono Bacon <jono@ubuntu.com>
-#          Tim Cuthbertson <tim@gfxmonk.net>
 #
 # This program is free software: you can redistribute it and/or modify it 
 # under the terms of either or both of the following licenses:
@@ -46,6 +46,25 @@ CHILD = None
 CMD = None
 OPTS = None
 
+class ExistingProcess(object):
+	def __init__(self, pid):
+		self.pid = pid
+		self.returncode = 0 # can't get return code of another process
+	
+	def wait(self):
+		import signal
+		from time import sleep
+		while True:
+			try:
+				os.kill(self.pid, signal.SIG_DFL)
+			except OSError:
+				break
+			sleep(1)
+
+	def kill(self):
+		import signal
+		os.kill(self.pid, signal.SIGINT)
+	
 def cancel(*a):
 	print >> sys.stderr, "killing: %s" % (CHILD.pid,)
 	CANCELLED.set()
@@ -89,13 +108,18 @@ class Cancel(RuntimeError): pass
 
 def launch(args):
 	global CHILD, OUTPUT
-	try:
-		CHILD = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	except OSError, e:
-		display_text("Couldn't launch task: %s\ndoes %r exist?\n  -- %s" % (" ".join(map(repr, args)), args[0], e))
-		raise Cancel
-	if OPTS.capture_output:
-		OUTPUT = Output(CHILD)
+	if OPTS.pid:
+		CHILD = ExistingProcess(OPTS.pid)
+	else:
+		try:
+			CHILD = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		except OSError, e:
+			display_text("Couldn't launch task: %s\ndoes %r exist?\n  -- %s" % (" ".join(map(repr, args)), args[0], e))
+			raise Cancel
+		if OPTS.capture_output:
+			OUTPUT = Output(CHILD)
+
+	WatchForEnd(CHILD).start()
 
 class StreamReader(threading.Thread):
 	daemon = True
@@ -106,19 +130,24 @@ class StreamReader(threading.Thread):
 		super(StreamReader, self).__init__(*a, **kw)
 
 	def run(self):
+		for line in self.instream:
+			print >> self.outstream, line,
+			self.output.add(line)
+
+class WatchForEnd(threading.Thread):
+	def __init__(self, child, *a, **kw):
+		self.child = child
+		super(WatchForEnd, self).__init__(*a, **kw)
+	
+	def run(self):
 		try:
-			while True:
-				line = self.instream.readline()
-				if line == '':
-					raise EOFError()
-				print >> self.outstream, line,
-				self.output.add(line)
-		except EOFError:
+			self.child.wait()
+		finally:
 			QUIT.set()
 
 class WaitForQuit(threading.Thread):
 	daemon = True
-	def run(*a):
+	def run(self):
 		QUIT.wait()
 		def _quit(*a):
 			if ALREADY_QUITTING.is_set():
@@ -128,7 +157,7 @@ class WaitForQuit(threading.Thread):
 		gobject.idle_add(_quit)
 
 def notify(opts):
-	if CANCELLED.is_set:
+	if CANCELLED.is_set():
 		return
 	if CHILD.returncode != 0:
 		OUTPUT.show()
@@ -136,29 +165,34 @@ def notify(opts):
 		return
 	subprocess.Popen([
 		'notify-send',
-		OPTS.long_description or OPTS.description or 'task',
+		OPTS.description or 'task',
 		"Finished %s" % ('successfully' if CHILD.returncode == 0 else ('with error code %s' % (CHILD.returncode,))),
 	])
 
-def main():
+def main(args=None):
 	global CMD, OPTS
+	if args is None:
+		args = sys.argv[1:]
 	p = optparse.OptionParser(
 		"usage: indicate-task [options] -- command-and-arguments",
 		epilog="eg: indicate-task -d download -- curl 'http://example.com/bigfile'")
 	p.add_option('--style', default='network-transmit-receive')
 	p.add_option('--long-description', default=None, help='set long description (visible in popup menu)')
 	p.add_option('-d', '--description', default=None, help='set description (visible in tray, defaults to command executable)')
+	p.add_option('-p', '--pid', default=None, type='int', help='attach to an already-running PID')
 	p.add_option('--id', default=None, help='set application ID (defaults to description)')
 	p.add_option('--no-icon', dest='style', action='store_const', const='', help="don't use an icon")
 	p.add_option('--no-notify', dest='notify', action='store_false', default=True, help="suppress completion notification")
 	p.add_option('--no-capture', dest='capture_output', action='store_false', default=True, help="suppress output capture")
 	p.add_option('--ignore-errors', action='store_false', dest='show_errors', default=True, help="Suppress automatic output display when process returns nonzero error code")
-	OPTS, CMD = p.parse_args()
+	OPTS, CMD = p.parse_args(args)
 
-	assert len(CMD) > 0
-
-	if OPTS.description is None:
-		OPTS.description = os.path.basename(CMD[0])
+	if OPTS.pid:
+		OPTS.capture_output = False
+	else:
+		assert len(CMD) > 0
+		if OPTS.description is None:
+			OPTS.description = os.path.basename(CMD[0])
 
 	if not OPTS.id:
 		OPTS.id = str(OPTS.description)
@@ -174,7 +208,7 @@ def main():
 	if OPTS.description:
 		try:
 			ind.set_label(OPTS.description)
-		except RuntimeError:
+		except (AttributeError, RuntimeError):
 			print >> sys.stderr, "Unable to set label - your libindicator version may be too old. use -d'' to disable this message"
 
 	launch(CMD)
@@ -207,8 +241,9 @@ def main():
 	try:
 		gtk.main()
 	except KeyboardInterrupt:
-		print >> sys.stderr, "ending..."
-		cancel()
+		if OPTS.pid is None:
+			print >> sys.stderr, "ending..."
+			cancel()
 	except Exception:
 		QUIT.set()
 		if OPTS.verbose:
