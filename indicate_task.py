@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2009 Canonical Ltd.
+# Copyright 2009 Canonical Ltd, 2011 Tim Cuthbertson
 #
 # Authors: Tim Cuthbertson <tim@gfxmonk.net>
 #          Neil Jagdish Patel <neil.patel@canonical.com>
