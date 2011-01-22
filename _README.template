@@ -5,17 +5,26 @@ A command line tool that displays an indicator-applet
 menu for the duration of a long-running process ("task").
 
 The indicator can contain:
+
  - an icon
  - a label
 
 When clicked, the menu contains:
+
  - descriptive text
  - "show output" button (which shows the currently
    captured STDOUT of the launched program)
  - cancel (sends SIGINT to program)
 
 indicate-task echoes stdin to stdout as well as capturing it,
-so you can pipe that somewhere if you need to use the output
-of the task.
+so you can wrap a program in an indicator and still get the
+same output / return code.
+
+**Note**: If you don't already have them, you will need to
+install the following packages:
+
+		apt-get install python-appindicator libnotify-bin zenity
 
 ------------------------------
+
+## Usage:

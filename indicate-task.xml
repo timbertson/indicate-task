@@ -3,6 +3,7 @@
 <interface uri="http://gfxmonk.net/dist/0install/indicate-task.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
 	<name>indicate-task</name>
 	<summary>show and control a running task with an indicator-applet</summary>
+	<homepage>https://github.com/gfxmonk/indicate-task</homepage>
 	<description>
 indicate-task
 =============
@@ -11,21 +12,73 @@ A command line tool that displays an indicator-applet
 menu for the duration of a long-running process (&quot;task&quot;).
 
 The indicator can contain:
+
  - an icon
  - a label
 
 When clicked, the menu contains:
+
  - descriptive text
  - &quot;show output&quot; button (which shows the currently
    captured STDOUT of the launched program)
  - cancel (sends SIGINT to program)
 
 indicate-task echoes stdin to stdout as well as capturing it,
-so you can pipe that somewhere if you need to use the output
-of the task.
+so you can wrap a program in an indicator and still get the
+same output / return code.
+
+**Note**: If you don't already have them, you will need to
+install the following packages:
+
+		apt-get install python-appindicator libnotify-bin zenity
 
 ------------------------------
-Usage: indicate-task [options] -- command-and-arguments
+
+## Usage:
+    Usage: indicate-task [options] -- command-and-arguments
+    
+    Options:
+      -h, --help            show this help message and exit
+      --style=STYLE         
+      --long-description=LONG_DESCRIPTION
+                            set long description (visible in popup menu)
+      -d DESCRIPTION, --description=DESCRIPTION
+                            set description (visible in tray, defaults to command
+                            executable)
+      -p PID, --pid=PID     attach to an already-running PID
+      --id=ID               set application ID (defaults to description)
+      --no-icon             don't use an icon
+      --no-notify           suppress completion notification
+      --no-capture          suppress output capture
+      --ignore-errors       Suppress automatic output display when process returns
+                            nonzero error code
+    
+    eg: indicate-task -d download -- curl 'http://example.com/bigfile'
+	</description>
+	<rich-description xmlns="http://gfxmonk.net/dist/0install">
+		<div xmlns="http://www.w3.org/1999/xhtml">
+			<div id="indicate-task">
+				<h1>indicate-task</h1>
+				<p>A command line tool that displays an indicator-applet menu for the duration of a long-running process (&quot;task&quot;).</p>
+				<p>The indicator can contain:</p>
+				<ul>
+					<li>an icon</li>
+					<li>a label</li>
+				</ul>
+				<p>When clicked, the menu contains:</p>
+				<ul>
+					<li>descriptive text</li>
+					<li>&quot;show output&quot; button (which shows the currently captured STDOUT of the launched program)</li>
+					<li>cancel (sends SIGINT to program)</li>
+				</ul>
+				<p>indicate-task echoes stdin to stdout as well as capturing it, so you can wrap a program in an indicator and still get the same output / return code.</p>
+				<p><strong>Note</strong>: If you don't already have them, you will need to install the following packages:</p>
+				<pre><code>    apt-get install python-appindicator libnotify-bin zenity
+</code></pre>
+				<hr/>
+				<div id="usage:">
+					<h2>Usage:</h2>
+					<pre><code>Usage: indicate-task [options] -- command-and-arguments
 
 Options:
   -h, --help            show this help message and exit
@@ -44,9 +97,16 @@ Options:
                         nonzero error code
 
 eg: indicate-task -d download -- curl 'http://example.com/bigfile'
-	</description>
+</code></pre>
+				</div>
+			</div>
+		</div>
+	</rich-description>
 	<group main="indicate_task.py">
 		<environment insert="" mode="prepend" name="PATH"/>
+		<requires interface="http://gfxmonk.net/dist/0install/python-appindicator.xml"/>
+		<requires interface="http://gfxmonk.net/dist/0install/libnotify-bin.xml"/>
+		<requires interface="http://gfxmonk.net/dist/0install/zenity.xml"/>
 		<implementation id="sha1new=c3fa36b89f7c8e59fbcdeb9446ff118af126cdbd" released="2011-01-16" version="0.1">
 			<manifest-digest sha256="bfe07f348243f7902527cb2987c22b1f4f0a321ab8fa973e707c72fa3bc74ae5"/>
 			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.tgz" size="2312"/>
@@ -60,8 +120,8 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.2.tgz" size="2745"/>
 		</implementation>
 		<implementation id="sha1new=344531ddcae081686f9eedcda3fa09ca3f46e462" released="2011-01-22" version="0.1.3">
-    <manifest-digest sha256="42e5c0101743178abbf0553aecf7894a08a83f46a1b17943b8191e4c6249b23d"/>
-    <archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.3.tgz" size="2990"/>
-  </implementation>
+			<manifest-digest sha256="42e5c0101743178abbf0553aecf7894a08a83f46a1b17943b8191e4c6249b23d"/>
+			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.3.tgz" size="2990"/>
+		</implementation>
 	</group>
 </interface>
