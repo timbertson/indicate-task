@@ -28,7 +28,6 @@
 import gobject
 gobject.threads_init()
 
-
 import gtk
 import appindicator
 import optparse
@@ -38,13 +37,14 @@ import sys
 import os
 import subprocess
 
-OUTPUT = None
-QUIT = threading.Event()
-ALREADY_QUITTING = threading.Event()
-CANCELLED = threading.Event()
-CHILD = None
-CMD = None
-OPTS = None
+def init_globals():
+	global QUIT, ALREADY_QUITTING, CANCELLED, CHILD, OPTS, OUTPUT
+	QUIT = threading.Event()
+	ALREADY_QUITTING = threading.Event()
+	CANCELLED = threading.Event()
+	CHILD = None
+	OPTS = None
+	OUTPUT = None
 
 class ExistingProcess(object):
 	def __init__(self, pid):
@@ -170,6 +170,7 @@ def notify(opts):
 	])
 
 def main(args=None):
+	init_globals()
 	global CMD, OPTS
 	if args is None:
 		args = sys.argv[1:]
