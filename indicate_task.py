@@ -36,6 +36,7 @@ from StringIO import StringIO
 import sys
 import os
 import subprocess
+import logging
 
 def init_globals():
 	global QUIT, ALREADY_QUITTING, CANCELLED, CHILD, OPTS, OUTPUT
@@ -45,6 +46,7 @@ def init_globals():
 	CHILD = None
 	OPTS = None
 	OUTPUT = None
+	logging.basicConfig(level=logging.INFO)
 
 class ExistingProcess(object):
 	def __init__(self, pid):
@@ -101,6 +103,7 @@ class Output(object):
 	def show(self, *a):
 		with self.lock:
 			s = self.combined.getvalue()
+			logging.debug("showing output: %s" % (s,))
 			s = "Output from %s (%s)\n____\n%s" % (OPTS.description or 'command', ' '.join(map(repr, CMD)),s)
 			self.display = display_text(s)
 
@@ -114,7 +117,9 @@ def launch(args):
 		try:
 			CHILD = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		except OSError, e:
-			display_text("Couldn't launch task: %s\ndoes %r exist?\n  -- %s" % (" ".join(map(repr, args)), args[0], e))
+			msg = "Couldn't launch task: %s\ndoes %r exist?\n  -- %s" % (" ".join(map(repr, args)), args[0], e)
+			logging.debug(msg)
+			display_text(msg)
 			raise Cancel
 		if OPTS.capture_output:
 			OUTPUT = Output(CHILD)
@@ -159,7 +164,7 @@ class WaitForQuit(threading.Thread):
 def notify(opts):
 	if CANCELLED.is_set():
 		return
-	if CHILD.returncode != 0:
+	if CHILD.returncode != 0 and OPTS.show_errors:
 		OUTPUT.show()
 	if not OPTS.notify:
 		return

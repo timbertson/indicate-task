@@ -1,3 +1,4 @@
 0inst
 *-local.xml
 *.pyc
+.tags
