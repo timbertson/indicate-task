@@ -103,6 +103,11 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 		</div>
 	</rich-description>
 	<group main="indicate_task.py">
+		<command name="test">
+			<runner interface="http://gfxmonk.net/dist/0install/nosetests-runner.xml"/>
+			<arg>-v</arg>
+			<requires interface="http://gfxmonk.net/dist/0install/python-pea.xml"/>
+		</command>
 		<environment insert="" mode="prepend" name="PATH"/>
 		<requires interface="http://gfxmonk.net/dist/0install/python-appindicator.xml"/>
 		<requires interface="http://gfxmonk.net/dist/0install/libnotify-bin.xml"/>
