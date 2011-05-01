@@ -24,12 +24,14 @@
 # License version 3 and version 2.1 along with this program.	If not, see 
 # <http://www.gnu.org/licenses/>
 #
+from __future__ import absolute_import
 
 import gobject
 gobject.threads_init()
 
 import gtk
-import appindicator
+#import appindicator
+import pynotify
 import optparse
 import threading
 from StringIO import StringIO
@@ -37,6 +39,8 @@ import sys
 import os
 import subprocess
 import logging
+
+from indicate_task.indicate import Indicator
 
 def init_globals():
 	global QUIT, ALREADY_QUITTING, CANCELLED, CHILD, OPTS, OUTPUT
@@ -66,14 +70,15 @@ class ExistingProcess(object):
 	def kill(self):
 		import signal
 		os.kill(self.pid, signal.SIGINT)
-	
+		#TODO: catch OSError and ensure process is gone
+
 def cancel(*a):
 	print >> sys.stderr, "killing: %s" % (CHILD.pid,)
 	CANCELLED.set()
 	CHILD.kill()
 
 def display_text(s):
-	p = subprocess.Popen(['zenity', '--text-info', '--width=600', '--height=400'], stdin=subprocess.PIPE)
+	p = subprocess.Popen(['zenity', '--text-info', '--width=600', '--height=800'], stdin=subprocess.PIPE)
 	p.stdin.write(s)
 	return p
 
@@ -168,11 +173,12 @@ def notify(opts):
 		OUTPUT.show()
 	if not OPTS.notify:
 		return
-	subprocess.Popen([
-		'notify-send',
-		OPTS.description or 'task',
+	notification = pynotify.Notification(OPTS.description or 'task',
 		"Finished %s" % ('successfully' if CHILD.returncode == 0 else ('with error code %s' % (CHILD.returncode,))),
-	])
+		OPTS.style)
+	notification.set_hint_double('transient', 1)
+	notification.set_timeout(200)
+	notification.show()
 
 def main(args=None):
 	init_globals()
@@ -206,42 +212,15 @@ def main(args=None):
 	if not OPTS.long_description and OPTS.description:
 		OPTS.long_description = OPTS.description + ": running..."
 
-	ind = appindicator.Indicator(OPTS.id,
-		OPTS.style,
-		appindicator.CATEGORY_APPLICATION_STATUS)
-
-	ind.set_status(appindicator.STATUS_ACTIVE)
-	if OPTS.description:
-		try:
-			ind.set_label(OPTS.description)
-		except (AttributeError, RuntimeError):
-			print >> sys.stderr, "Unable to set label - your libindicator version may be too old. use -d'' to disable this message"
+	indicator = Indicator(name=OPTS.description, description=OPTS.long_description, icon=OPTS.style, id=OPTS.id)
 
 	launch(CMD)
 
-	items = []
 	if OPTS.capture_output:
-		show_log_menu = gtk.MenuItem("Show output...")
-		show_log_menu.connect("activate", OUTPUT.show, None)
-		items.append(show_log_menu)
-		items.append(gtk.MenuItem())
+		indicator.add_action("Show output...", OUTPUT.show)
+	indicator.add_action("Kill", cancel)
 
-	cancel_menu = gtk.MenuItem("Cancel")
-	cancel_menu.connect("activate", cancel, None)
-	items.append(cancel_menu)
-
-	# show all items
-	menu = gtk.Menu()
-
-	if OPTS.long_description:
-		label = gtk.MenuItem(OPTS.long_description)
-		label.set_sensitive(False)
-		items.insert(0, label)
-
-	for item in items:
-		menu.append(item)
-		item.show()
-	ind.set_menu(menu)
+	indicator.show()
 
 	WaitForQuit().start()
 	try:
@@ -256,6 +235,7 @@ def main(args=None):
 			raise
 
 	CHILD.wait()
+	indicator.close()
 	notify(OPTS)
 	return CHILD.returncode
 

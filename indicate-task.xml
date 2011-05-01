@@ -1,6 +1,6 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <?xml-stylesheet type='text/xsl' href='interface.xsl'?>
-<interface uri="http://gfxmonk.net/dist/0install/indicate-task.xml" xmlns="http://zero-install.sourceforge.net/2004/injector/interface">
+<interface xmlns="http://zero-install.sourceforge.net/2004/injector/interface" uri="http://gfxmonk.net/dist/0install/indicate-task.xml">
 	<name>indicate-task</name>
 	<summary>show and control a running task with an indicator-applet</summary>
 	<homepage>https://github.com/gfxmonk/indicate-task</homepage>
@@ -9,7 +9,7 @@ indicate-task
 =============
 
 A command line tool that displays an indicator-applet
-menu for the duration of a long-running process (&quot;task&quot;).
+menu for the duration of a long-running process ("task").
 
 The indicator can contain:
 
@@ -19,7 +19,7 @@ The indicator can contain:
 When clicked, the menu contains:
 
  - descriptive text
- - &quot;show output&quot; button (which shows the currently
+ - "show output" button (which shows the currently
    captured STDOUT of the launched program)
  - cancel (sends SIGINT to program)
 
@@ -57,28 +57,29 @@ install the following packages:
 	</description>
 	<rich-description xmlns="http://gfxmonk.net/dist/0install">
 		<div xmlns="http://www.w3.org/1999/xhtml">
-			<div id="indicate-task">
-				<h1>indicate-task</h1>
-				<p>A command line tool that displays an indicator-applet menu for the duration of a long-running process (&quot;task&quot;).</p>
-				<p>The indicator can contain:</p>
-				<ul>
-					<li>an icon</li>
-					<li>a label</li>
-				</ul>
-				<p>When clicked, the menu contains:</p>
-				<ul>
-					<li>descriptive text</li>
-					<li>&quot;show output&quot; button (which shows the currently captured STDOUT of the launched program)</li>
-					<li>cancel (sends SIGINT to program)</li>
-				</ul>
-				<p>indicate-task echoes stdin to stdout as well as capturing it, so you can wrap a program in an indicator and still get the same output / return code.</p>
-				<p><strong>Note</strong>: If you don't already have them, you will need to install the following packages:</p>
-				<pre><code>    apt-get install python-appindicator libnotify-bin zenity
-</code></pre>
-				<hr/>
-				<div id="usage:">
-					<h2>Usage:</h2>
-					<pre><code>Usage: indicate-task [options] -- command-and-arguments
+			<h1 id="indicate-task">indicate-task</h1>
+			<p>A command line tool that displays an indicator-applet menu for the duration of a long-running process ("task").</p>
+			<p>The indicator can contain:</p>
+			<ul>
+				<li>an icon</li>
+				<li>a label</li>
+			</ul>
+			<p>When clicked, the menu contains:</p>
+			<ul>
+				<li>descriptive text</li>
+				<li>"show output" button (which shows the currently captured STDOUT of the launched program)</li>
+				<li>cancel (sends SIGINT to program)</li>
+			</ul>
+			<p>indicate-task echoes stdin to stdout as well as capturing it, so you can wrap a program in an indicator and still get the same output / return code.</p>
+			<p><strong>Note</strong>: If you don't already have them, you will need to install the following packages:</p>
+			<pre>
+				<code>    apt-get install python-appindicator libnotify-bin zenity
+</code>
+			</pre>
+			<hr/>
+			<h2 id="usage">Usage:</h2>
+			<pre>
+				<code>Usage: indicate-task [options] -- command-and-arguments
 
 Options:
   -h, --help            show this help message and exit
@@ -97,9 +98,8 @@ Options:
                         nonzero error code
 
 eg: indicate-task -d download -- curl 'http://example.com/bigfile'
-</code></pre>
-				</div>
-			</div>
+</code>
+			</pre>
 		</div>
 	</rich-description>
 	<group main="indicate_task.py">
@@ -127,6 +127,23 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 		<implementation id="sha1new=344531ddcae081686f9eedcda3fa09ca3f46e462" released="2011-01-22" version="0.1.3">
 			<manifest-digest sha256="42e5c0101743178abbf0553aecf7894a08a83f46a1b17943b8191e4c6249b23d"/>
 			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.3.tgz" size="2990"/>
+		</implementation>
+	</group>
+	<group main="indicate_task/main.py" stability="developer">
+		<command name="test">
+			<runner interface="http://gfxmonk.net/dist/0install/nosetests-runner.xml"/>
+			<arg>-v</arg>
+			<requires interface="http://gfxmonk.net/dist/0install/python-pea.xml"/>
+		</command>
+		<environment insert="" mode="prepend" name="PATH"/>
+		<!-- TODO: suggested dependency (for ubuntu) -->
+		<!-- <requires interface="http://gfxmonk.net/dist/0install/python-appindicator.xml"/> -->
+		<requires interface="http://gfxmonk.net/dist/0install/pynotify.xml"/>
+		<requires interface="http://gfxmonk.net/dist/0install/zenity.xml"/>
+		<environment insert="" mode="prepend" name="PYTHONPATH"/>
+		<implementation id="sha1new=c1ba2bd3b6c620719c75d19b7220653f695c71b5" released="2011-05-01" version="0.1.4">
+			<manifest-digest sha256="81f0e29cc9cbf2b285106f2e74b6edb577d32b059be46b61fa2d98b9796d3c17"/>
+			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.4.tgz" size="8904"/>
 		</implementation>
 	</group>
 </interface>
