@@ -6,6 +6,8 @@ class TestDisplayingOutput(BaseTest):
 	I want to see command output when a task is running
 	"""
 
+	import unittest
+	@unittest.skip("not yet implemented due to output buffering in libc")
 	def test_displaying_output_of_a_still_running_command(self):
 		When.I_run_indicate_task('--', 'cat')
 		And.I_enter("input")
@@ -25,4 +27,5 @@ class TestDisplayingOutput(BaseTest):
 		And.I_enter("input")
 		Then.it_should_not_capture_any_output()
 		And.I_press_ctrl_d()
+		And.I_wait_for_the_task_to_complete()
 

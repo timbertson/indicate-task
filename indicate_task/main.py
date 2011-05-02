@@ -31,7 +31,7 @@ gobject.threads_init()
 
 import gtk
 #import appindicator
-import pynotify
+from pynotify import Notification
 import optparse
 import threading
 from StringIO import StringIO
@@ -173,7 +173,7 @@ def notify(opts):
 		OUTPUT.show()
 	if not OPTS.notify:
 		return
-	notification = pynotify.Notification(OPTS.description or 'task',
+	notification = Notification(OPTS.description or 'task',
 		"Finished %s" % ('successfully' if CHILD.returncode == 0 else ('with error code %s' % (CHILD.returncode,))),
 		OPTS.style)
 	notification.set_hint_double('transient', 1)
@@ -193,7 +193,7 @@ def main(args=None):
 	p.add_option('-d', '--description', default=None, help='set description (visible in tray, defaults to command executable)')
 	p.add_option('-p', '--pid', default=None, type='int', help='attach to an already-running PID')
 	p.add_option('--id', default=None, help='set application ID (defaults to description)')
-	p.add_option('--no-icon', dest='style', action='store_const', const='', help="don't use an icon")
+	p.add_option('--no-icon', dest='style', action='store_const', const=None, help="don't use an icon")
 	p.add_option('--no-notify', dest='notify', action='store_false', default=True, help="suppress completion notification")
 	p.add_option('--no-capture', dest='capture_output', action='store_false', default=True, help="suppress output capture")
 	p.add_option('--ignore-errors', action='store_false', dest='show_errors', default=True, help="Suppress automatic output display when process returns nonzero error code")

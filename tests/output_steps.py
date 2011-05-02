@@ -1,9 +1,9 @@
 from pea import step, world
-import indicate_task
+from indicate_task import main as indicate_task_main
 
 @step
 def I_show_the_output_of_the_task():
-	indicate_task.OUTPUT.show()
+	indicate_task_main.OUTPUT.show()
 
 class Object(object): pass
 @step
@@ -20,7 +20,7 @@ def it_should_have_shown_the_output_once():
 
 @step
 def it_should_not_capture_any_output():
-	assert indicate_task.OUTPUT is None
+	assert indicate_task_main.OUTPUT is None
 
 @step
 def the_output_should_be(match):

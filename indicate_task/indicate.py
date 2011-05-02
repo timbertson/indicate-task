@@ -18,7 +18,7 @@ class Indicator(object):
 						"And your notification server lacks the required capabilities for this program.\n"
 						"I need: %r\nbut you only have: %r" % (REQUIRED_CAPABILITIES, tuple(pynotify.get_server_caps())))
 				cls = AppIndicator
-			return super(Indicator, cls).__new__(cls)
+		return super(Indicator, cls).__new__(cls)
 
 	def __init__(self, name, description, icon, id=None):
 		self.name = name

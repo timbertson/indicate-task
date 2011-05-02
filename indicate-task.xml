@@ -133,6 +133,7 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 		<command name="test">
 			<runner interface="http://gfxmonk.net/dist/0install/nosetests-runner.xml"/>
 			<arg>-v</arg>
+			<arg>--immediate</arg>
 			<requires interface="http://gfxmonk.net/dist/0install/python-pea.xml"/>
 		</command>
 		<environment insert="" mode="prepend" name="PATH"/>
@@ -141,9 +142,9 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 		<requires interface="http://gfxmonk.net/dist/0install/pynotify.xml"/>
 		<requires interface="http://gfxmonk.net/dist/0install/zenity.xml"/>
 		<environment insert="" mode="prepend" name="PYTHONPATH"/>
-		<implementation id="sha1new=c1ba2bd3b6c620719c75d19b7220653f695c71b5" released="2011-05-01" version="0.1.4">
-			<manifest-digest sha256="81f0e29cc9cbf2b285106f2e74b6edb577d32b059be46b61fa2d98b9796d3c17"/>
-			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.4.tgz" size="8904"/>
+		<implementation id="sha1new=dcd80ab1719752225e2393bd341b2e5e1993343f" released="2011-05-02" version="0.1.4">
+			<manifest-digest sha256="9f84185dc9032bbd9d1b21007cd45fc998c8279325e6b4677bb6677c25280157"/>
+			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.4.tgz" size="8938"/>
 		</implementation>
 	</group>
 </interface>

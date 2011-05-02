@@ -13,7 +13,7 @@ class TestRunning(BaseTest):
 		And.I_press_ctrl_c()
 		And.I_wait_for_the_task_to_complete()
 		Then.there_should_be_an_indicator_named("cat")
-		And.it_should_have_a_menu_description_of("cat: running...")
+		And.it_should_have_a_description_of("cat: running...")
 		And.the_output_should_be('input')
 		And.the_error_output_should_be_empty()
 		And.the_return_code_should_not_be(0)

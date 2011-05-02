@@ -37,4 +37,4 @@ class CustomisingBehaviour(BaseTest):
 		And.I_press_ctrl_d()
 		And.I_wait_for_the_task_to_complete()
 		Then.there_should_be_an_indicator_named('cat')
-		And.it_should_have_a_menu_description_of("cat is ace")
+		And.it_should_have_a_description_of("cat is ace")

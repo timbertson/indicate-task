@@ -1,14 +1,16 @@
 from pea import step, world
 import os, sys
-
-import indicate_task
 import signal
 from StringIO import StringIO
 import threading, Queue
 import subprocess
 from time import sleep
-import appindicator
-RealAppIndicator = appindicator.Indicator
+
+import pynotify
+
+from indicate_task import main
+from indicate_task.indicate import Indicator
+
 RealPopen = subprocess.Popen
 RealSys = sys
 input_wait_time = 0.2
@@ -17,32 +19,14 @@ sleep_time = 0.2
 
 class Object(object): pass
 
-class MockAppIndicator(object):
-	instance = None
-	def __call__(self, *a, **k):
-		assert self.instance is None
-		self.instance = RealAppIndicator(*a, **k)
-		self.menu_description = None
-		self.icon = None
-		self.label = None
-		return self
-	
-	def set_label(self, l):
-		self.label = l
-		self.instance.set_label(l)
-	
-	def set_icon(self, i):
-		self.set_icon(i)
-		self.instance.set_icon(i)
-	
-	def set_menu(self, m):
-		self.menu_description = m.get_children()[0].get_label()
-		# a bug in (presumably) appindicator causes a dbus error when you do this
-		# twice in a process. Fortunately non-test code never does so
+class MockIndicator(Indicator):
+	def __init__(self, *a, **k):
+		self.real_indicator = Indicator(*a, **k)
+		super(MockIndicator, self).__init__(*a, **k)
+		world.indicator = self
+
+	def _make_indicator(self):
 		pass
-	
-	def __getattr__(self, attr):
-		return getattr(self.instance, attr)
 
 class MockSys(object):
 	def __init__(self):
@@ -127,8 +111,6 @@ class MockChildProcess(object):
 		if self.cmd[0] == 'zenity':
 			# stub out zenity, as it's not part of the test
 			self.proc = MockZenity(self.cmd)
-		elif self.cmd[0] == 'notify-send':
-			self.proc = MockNotify(self.cmd)
 		else:
 			k['stdin'] = subprocess.PIPE
 			self.proc = RealPopen(*a, **k)
@@ -140,8 +122,23 @@ class MockChildProcess(object):
 		return "<#MockChildProcess: %r>" % (self.cmd,)
 
 class MockNotify(object):
-	def __init__(self, args):
-		pass
+	def __init__(self, name, desc, icon):
+		self.name = name
+		self.description = desc
+		self.icon = icon
+		self.notification = pynotify.Notification(name, desc, icon)
+		self.hints = {}
+	
+	def show(self):
+		world.notifications.append(self)
+		self.notification.show()
+	
+	def set_hint_double(self, name, value):
+		self.hints[name] = value
+		self.notification.set_hint_double(name, value)
+	
+	def set_timeout(self, millis):
+		self.timeout_in_millis = millis
 
 class MockZenity(object):
 	def __init__(self, args):
@@ -166,20 +163,21 @@ def I_run_indicate_task(*args):
 	world.returncode_queue = returncode_queue = Queue.Queue()
 	world.popen = popen = MockPopen()
 	running = threading.Event()
-	world.indicator = indicator = MockAppIndicator()
 	world.sys = mock_sys = MockSys()
+	world.notifications = []
 	class Run(threading.Thread):
 		daemon = True
 		def run(self):
-			indicate_task.appindicator.Indicator = indicator
-			indicate_task.sys = mock_sys
-			indicate_task.subprocess.Popen = popen
-			real_main = indicate_task.gtk.main
+			main.Indicator = MockIndicator
+			main.Notification = MockNotify
+			main.sys = mock_sys
+			main.subprocess.Popen = popen
+			real_main = main.gtk.main
 			def _stub_main(*a):
 				running.set()
 				real_main()
-			indicate_task.gtk.main = _stub_main
-			returncode_queue.put(indicate_task.main(map(str, args)))
+			main.gtk.main = _stub_main
+			returncode_queue.put(main.main(map(str, args)))
 	world.run = Run()
 	world.run.start()
 	running.wait()
@@ -198,15 +196,15 @@ def I_wait_for_the_task_to_complete():
 
 @step
 def there_should_be_an_indicator_named(name):
-	world.assertEquals(world.indicator.label, name)
+	world.assertEquals(world.indicator.name, name)
 
 @step
 def it_should_notify_the_user_of_the_tasks_completion():
-	assert world.popen['notify-send']
+	assert len(world.notifications) >= 1, world.notifications
 
 @step
 def it_should_not_notify_the_user_of_the_tasks_completion():
-	assert 'notify-send' not in world.popen
+	assert len(world.notifications) == 0, world.notifications
 
 @step
 def the_return_code_should_not_be(code):
@@ -221,8 +219,8 @@ def it_should_have_no_icon():
 	assert world.indicator.icon is None
 
 @step
-def it_should_have_a_menu_description_of(group1):
-	assert world.indicator.menu_description == group1
+def it_should_have_a_description_of(group1):
+	assert world.indicator.description == group1
 
 @step
 def I_kill_the_external_process():
