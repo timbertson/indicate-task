@@ -8,33 +8,27 @@
 indicate-task
 =============
 
-A command line tool that displays an indicator-applet
-menu for the duration of a long-running process ("task").
+A command line tool that displays an indicator / persistent
+notification for the duration of a long-running process (a task).
 
-The indicator can contain:
+It has been tested on Ubuntu 10.10 and Fedora 15, but other distros
+may not yet have the required support in libnotify / appindicators.
 
- - an icon
- - a label
+It can also notify you when the task is complete, and allows you to
+cancel the task or view its output while it is running.
 
-When clicked, the menu contains:
+indicate-task echoes stdin to stdout as well as capturing it, so you
+can wrap a program in an indicator and still get the same output /
+return code.
 
- - descriptive text
- - "show output" button (which shows the currently
-   captured STDOUT of the launched program)
- - cancel (sends SIGINT to program)
-
-indicate-task echoes stdin to stdout as well as capturing it,
-so you can wrap a program in an indicator and still get the
-same output / return code.
-
-**Note**: If you don't already have them, you will need to
-install the following packages:
-
-		apt-get install python-appindicator libnotify-bin zenity
+**Note**: indicate task requires the `python-appindicator` package
+on Ubuntu. I can't add this to the feed's dependency list, as it
+doesn't exist (and isn't needed) in any other distro.
 
 ------------------------------
 
 ## Usage:
+
     Usage: indicate-task [options] -- command-and-arguments
     
     Options:
@@ -43,43 +37,27 @@ install the following packages:
       --long-description=LONG_DESCRIPTION
                             set long description (visible in popup menu)
       -d DESCRIPTION, --description=DESCRIPTION
-                            set description (visible in tray, defaults to command
-                            executable)
+                            set description (visible in tray, defaults to command executable)
       -p PID, --pid=PID     attach to an already-running PID
       --id=ID               set application ID (defaults to description)
       --no-icon             don't use an icon
       --no-notify           suppress completion notification
       --no-capture          suppress output capture
-      --ignore-errors       Suppress automatic output display when process returns
-                            nonzero error code
+      --ignore-errors       Suppress automatic output display when process returns nonzero error code
     
     eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 	</description>
 	<rich-description xmlns="http://gfxmonk.net/dist/0install">
 		<div xmlns="http://www.w3.org/1999/xhtml">
 			<h1 id="indicate-task">indicate-task</h1>
-			<p>A command line tool that displays an indicator-applet menu for the duration of a long-running process ("task").</p>
-			<p>The indicator can contain:</p>
-			<ul>
-				<li>an icon</li>
-				<li>a label</li>
-			</ul>
-			<p>When clicked, the menu contains:</p>
-			<ul>
-				<li>descriptive text</li>
-				<li>"show output" button (which shows the currently captured STDOUT of the launched program)</li>
-				<li>cancel (sends SIGINT to program)</li>
-			</ul>
+			<p>A command line tool that displays an indicator / persistent notification for the duration of a long-running process (a task).</p>
+			<p>It has been tested on Ubuntu 10.10 and Fedora 15, but other distros may not yet have the required support in libnotify / appindicators.</p>
+			<p>It can also notify you when the task is complete, and allows you to cancel the task or view its output while it is running.</p>
 			<p>indicate-task echoes stdin to stdout as well as capturing it, so you can wrap a program in an indicator and still get the same output / return code.</p>
-			<p><strong>Note</strong>: If you don't already have them, you will need to install the following packages:</p>
-			<pre>
-				<code>    apt-get install python-appindicator libnotify-bin zenity
-</code>
-			</pre>
+			<p><strong>Note</strong>: indicate task requires the <code>python-appindicator</code> package on Ubuntu. I can't add this to the feed's dependency list, as it doesn't exist (and isn't needed) in any other distro.</p>
 			<hr/>
 			<h2 id="usage">Usage:</h2>
-			<pre>
-				<code>Usage: indicate-task [options] -- command-and-arguments
+			<pre><code>Usage: indicate-task [options] -- command-and-arguments
 
 Options:
   -h, --help            show this help message and exit
@@ -87,19 +65,16 @@ Options:
   --long-description=LONG_DESCRIPTION
                         set long description (visible in popup menu)
   -d DESCRIPTION, --description=DESCRIPTION
-                        set description (visible in tray, defaults to command
-                        executable)
+                        set description (visible in tray, defaults to command executable)
   -p PID, --pid=PID     attach to an already-running PID
   --id=ID               set application ID (defaults to description)
   --no-icon             don't use an icon
   --no-notify           suppress completion notification
   --no-capture          suppress output capture
-  --ignore-errors       Suppress automatic output display when process returns
-                        nonzero error code
+  --ignore-errors       Suppress automatic output display when process returns nonzero error code
 
 eg: indicate-task -d download -- curl 'http://example.com/bigfile'
-</code>
-			</pre>
+</code></pre>
 		</div>
 	</rich-description>
 	<group main="indicate_task.py">
@@ -129,7 +104,7 @@ eg: indicate-task -d download -- curl 'http://example.com/bigfile'
 			<archive href="http://gfxmonk.net/dist/0install/indicate-task/indicate-task-0.1.3.tgz" size="2990"/>
 		</implementation>
 	</group>
-	<group main="indicate_task/main.py" stability="developer">
+	<group main="indicate_task/main.py">
 		<command name="test">
 			<runner interface="http://gfxmonk.net/dist/0install/nosetests-runner.xml"/>
 			<arg>-v</arg>
