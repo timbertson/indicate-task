@@ -57,7 +57,8 @@ doesn't exist (and isn't needed) in any other distro.
 			<p><strong>Note</strong>: indicate task requires the <code>python-appindicator</code> package on Ubuntu. I can't add this to the feed's dependency list, as it doesn't exist (and isn't needed) in any other distro.</p>
 			<hr/>
 			<h2 id="usage">Usage:</h2>
-			<pre><code>Usage: indicate-task [options] -- command-and-arguments
+			<pre>
+				<code>Usage: indicate-task [options] -- command-and-arguments
 
 Options:
   -h, --help            show this help message and exit
@@ -74,7 +75,8 @@ Options:
   --ignore-errors       Suppress automatic output display when process returns nonzero error code
 
 eg: indicate-task -d download -- curl 'http://example.com/bigfile'
-</code></pre>
+</code>
+			</pre>
 		</div>
 	</rich-description>
 	<group main="indicate_task.py">
