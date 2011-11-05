@@ -31,6 +31,7 @@ gobject.threads_init()
 
 import gtk
 #import appindicator
+import pynotify
 from pynotify import Notification
 import optparse
 import threading
@@ -173,6 +174,7 @@ def notify(opts):
 		OUTPUT.show()
 	if not OPTS.notify:
 		return
+	pynotify.init('indicate-task')
 	notification = Notification(OPTS.description or 'task',
 		"Finished %s" % ('successfully' if CHILD.returncode == 0 else ('with error code %s' % (CHILD.returncode,))),
 		OPTS.style)
