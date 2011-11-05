@@ -22,20 +22,3 @@ doesn't exist (and isn't needed) in any other distro.
 
 ## Usage:
 
-    Usage: indicate-task [options] -- command-and-arguments
-    
-    Options:
-      -h, --help            show this help message and exit
-      --style=STYLE         
-      --long-description=LONG_DESCRIPTION
-                            set long description (visible in popup menu)
-      -d DESCRIPTION, --description=DESCRIPTION
-                            set description (visible in tray, defaults to command executable)
-      -p PID, --pid=PID     attach to an already-running PID
-      --id=ID               set application ID (defaults to description)
-      --no-icon             don't use an icon
-      --no-notify           suppress completion notification
-      --no-capture          suppress output capture
-      --ignore-errors       Suppress automatic output display when process returns nonzero error code
-    
-    eg: indicate-task -d download -- curl 'http://example.com/bigfile'
