@@ -1,6 +1,8 @@
 indicate-task
 =============
 
+<img src="http://gfxmonk.net/dist/status/project/indicate-task.png">
+
 A command line tool that displays an indicator / persistent
 notification for the duration of a long-running process (a task).
 
